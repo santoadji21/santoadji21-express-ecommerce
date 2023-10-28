@@ -1,19 +1,22 @@
-import { Request, Response } from 'express'
-import { createResponse, createErrorResponse } from '@utils/response'
 import { Product } from '@model/Product'
-import { createProductSchema, updateProductSchema } from '@schema/product'
+import { createProductSchema, productIdSchema, updateProductSchema } from '@schema/product'
+import { logError, logInfo } from '@utils/logger'
 import { productFilter } from '@utils/product'
+import { createErrorResponse, createResponse } from '@utils/response'
+import { Request, Response } from 'express'
 
 export class ProductController {
   // Create a new product
   async create(req: Request, res: Response) {
     const validationResult = createProductSchema.safeParse(req.body)
     if (!validationResult.success) {
+      logError('Validation error', req, validationResult.error.issues)
       return res.status(400).json(createErrorResponse('Validation error', validationResult.error.issues))
     }
     const productData = validationResult.data
     // Ensure the user is authenticated
     if (!req.user || !req.user.id) {
+      logError('Unauthorized access', req, null)
       return res.status(401).json(createErrorResponse('Unauthorized access'))
     }
     try {
@@ -23,8 +26,10 @@ export class ProductController {
         user: req.user.id,
       }
       const product = await Product.create(newProductData)
+      logInfo('Products create successfully', req)
       return res.json(createResponse(product, 'Product created successfully'))
     } catch (error) {
+      logError('Server error', req, error)
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
   }
@@ -44,8 +49,10 @@ export class ProductController {
         totalPages: Math.ceil(totalProducts / limit),
         totalProducts,
       }
+      logInfo('Products retrieved successfully', req)
       return res.json(createResponse({ products, pagination }, 'Products retrieved successfully'))
     } catch (error) {
+      logError('Error retrieving products', req, error)
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
   }
@@ -53,13 +60,21 @@ export class ProductController {
   // Get a single product by ID
   async getById(req: Request, res: Response) {
     const { id } = req.params
+    const validationResult = productIdSchema.safeParse(id)
+    if (!validationResult.success) {
+      logError('Validation error', req, validationResult.error.issues)
+      return res.status(400).json(createErrorResponse('Validation error', validationResult.error.issues))
+    }
     try {
       const product = await Product.findById(id)
       if (!product) {
+        logError('Product not found', req, null)
         return res.status(404).json(createErrorResponse('Product not found'))
       }
+      logInfo('Product retrieved successfully', req)
       return res.json(createResponse(product, 'Product retrieved successfully'))
     } catch (error) {
+      logError('Error retrieving product', req, error)
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
   }
@@ -67,18 +82,27 @@ export class ProductController {
   // Update a product
   async update(req: Request, res: Response) {
     const { id } = req.params
+    const validationIdResult = productIdSchema.safeParse(id)
+    if (!validationIdResult.success) {
+      logError('Validation error', req, validationIdResult.error.issues)
+      return res.status(400).json(createErrorResponse('Validation error', validationIdResult.error.issues))
+    }
     const validationResult = updateProductSchema.safeParse(req.body)
     if (!validationResult.success) {
+      logError('Validation error', req, validationResult.error.issues)
       return res.status(400).json(createErrorResponse('Validation error', validationResult.error.issues))
     }
     const updateData = validationResult.data
     try {
       const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true })
       if (!updatedProduct) {
+        logError('Product not found', req, null)
         return res.status(404).json(createErrorResponse('Product not found'))
       }
+      logInfo('Product updated successfully', req)
       return res.json(createResponse(updatedProduct, 'Product updated successfully'))
     } catch (error) {
+      logError('Error updating product', req, error)
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
   }
@@ -86,13 +110,21 @@ export class ProductController {
   // Delete a product
   async delete(req: Request, res: Response) {
     const { id } = req.params
+    const validationResult = productIdSchema.safeParse(id)
+    if (!validationResult.success) {
+      logError('Validation error', req, validationResult.error.issues)
+      return res.status(400).json(createErrorResponse('Validation error', validationResult.error.issues))
+    }
     try {
       const deletedProduct = await Product.findByIdAndDelete(id)
       if (!deletedProduct) {
+        logError('Product not found', req, null)
         return res.status(404).json(createErrorResponse('Product not found'))
       }
+      logInfo('Product deleted successfully', req)
       return res.json(createResponse({}, 'Product deleted successfully'))
     } catch (error) {
+      logError('Error deleting product', req, error)
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
   }

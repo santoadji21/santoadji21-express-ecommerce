@@ -6,6 +6,7 @@ import { config } from '@config/environment'
 declare module 'express' {
   interface UserPayload {
     id: string
+    email?: string
   }
 
   interface Request {

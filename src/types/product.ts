@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb'
 import { z } from 'zod'
 
 export const createProductSchema = z.object({
@@ -14,3 +15,7 @@ export const createProductSchema = z.object({
 })
 
 export const updateProductSchema = createProductSchema.partial()
+
+export const productIdSchema = z.string().refine((value) => ObjectId.isValid(value), {
+  message: 'Invalid product ID',
+})

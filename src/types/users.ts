@@ -8,5 +8,5 @@ export const createUserSchema = z.object({
 })
 
 export const userIdSchema = z.string().refine((value) => ObjectId.isValid(value), {
-  message: 'Invalid user id',
+  message: 'Invalid user ID',
 })
