@@ -27,12 +27,10 @@ const ProductSchema = new Schema<Product>(
     },
     brand: {
       type: String,
-      default: '',
     },
     category: {
       type: String,
       ref: 'Category',
-      default: '',
     },
     size: {
       type: [String],

@@ -1,3 +1,5 @@
+import { Brand } from '@model/Brand'
+import { Category } from '@model/Category'
 import { Product } from '@model/Product'
 import { createProductSchema, productIdSchema, updateProductSchema } from '@schema/product'
 import { logError, logInfo } from '@utils/logger'
@@ -20,12 +22,31 @@ export class ProductController {
       return res.status(401).json(createErrorResponse('Unauthorized access'))
     }
     try {
-      // Include the user's ID in the product data
+      const categoryProduct = await Category.findOne({ name: productData.category })
+      const brandProduct = await Brand.findOne({ name: productData.brand })
+      const existingProduct = await Product.findOne({ name: productData.name })
+      if (!categoryProduct) {
+        logError('Category not found', req, null)
+        return res.status(404).json(createErrorResponse('Category not found'))
+      }
+      if (!brandProduct) {
+        logError('Brand not found', req, null)
+        return res.status(404).json(createErrorResponse('Brand not found'))
+      }
+      if (existingProduct) {
+        logError('Product already exists', req, null)
+        return res.status(400).json(createErrorResponse('Product already exists'))
+      }
       const newProductData = {
         ...productData,
         user: req.user.id,
       }
+
       const product = await Product.create(newProductData)
+      categoryProduct.products.push(product._id)
+      await categoryProduct.save()
+      brandProduct.products.push(product._id)
+      await brandProduct.save()
       logInfo('Products create successfully', req)
       return res.json(createResponse(product, 'Product created successfully'))
     } catch (error) {

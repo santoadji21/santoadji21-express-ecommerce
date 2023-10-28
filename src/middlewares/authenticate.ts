@@ -18,7 +18,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   const token = req.header('Authorization')?.replace('Bearer ', '')
 
   if (!token) {
-    return res.status(401).json(createErrorResponse('No token, authorization denied'))
+    return res.status(401).json(createErrorResponse('Access denied, no token provided'))
   }
   try {
     // Verify the token
