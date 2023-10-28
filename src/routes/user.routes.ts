@@ -8,8 +8,8 @@ const userBaseUrl = '/users'
 
 router.post(`${userBaseUrl}/`, userController.create)
 router.get(`${userBaseUrl}/`, userController.get)
-router.get(`${userBaseUrl}/:id`, userController.getById)
-router.patch(`${userBaseUrl}/:id`, userController.update)
-router.delete(`${userBaseUrl}/:id`, userController.delete)
+router.get('/user/:id', userController.getById)
+router.patch('/user/:id', userController.update)
+router.delete('/user/:id', userController.delete)
 
 export default router

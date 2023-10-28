@@ -51,10 +51,11 @@ export class UserController {
     }
     try {
       const user = await User.findById(id)
+      const userWithoutPassword = omit(user?.toObject(), ['password'])
       if (!user) {
         return res.status(404).json(createErrorResponse('User not found'))
       }
-      return res.json(createResponse(user, 'User retrieved successfully'))
+      return res.json(createResponse(userWithoutPassword, 'User retrieved successfully'))
     } catch (error) {
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
@@ -68,7 +69,7 @@ export class UserController {
     if (!idValidationResult.success) {
       return res.status(400).json(createErrorResponse('Validation error', idValidationResult.error.issues))
     }
-    const dataValidationResult = createUserSchema.safeParse(updateData) // Replace updateUserSchema with your actual schema
+    const dataValidationResult = createUserSchema.safeParse(updateData)
     if (!dataValidationResult.success) {
       return res.status(400).json(createErrorResponse('Validation error', dataValidationResult.error.issues))
     }

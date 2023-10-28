@@ -16,7 +16,7 @@
     "**/.classpath": true,
     "**/.project": true,
     "**/.settings": true,
-    "**/.factorypath": true
-    // "**/node_modules": true
+    "**/.factorypath": true,
+    "**/node_modules": true
   }
 }

@@ -4,6 +4,7 @@ import { Response, Request } from 'express'
 import { User } from '@model/User'
 import { createErrorResponse, createResponse } from '@utils/response'
 import { config } from '@config/environment'
+import { omit } from 'lodash'
 
 export class AuthController {
   async login(req: Request, res: Response) {
@@ -11,6 +12,7 @@ export class AuthController {
       const { email, password } = req.body
       // Find the user by email
       const user = await User.findOne({ email })
+      const userWithoutPassword = omit(user?.toObject(), ['password'])
       if (!user) {
         return res.status(401).json(createErrorResponse('Invalid credentials'))
       }
@@ -31,9 +33,8 @@ export class AuthController {
         return res.json(
           createResponse(
             {
+              user: userWithoutPassword,
               token,
-              email: user.email,
-              name: user.name,
             },
             'Logged in successfully',
           ),
