@@ -1,11 +1,13 @@
 import { Brand } from '@model/Brand'
 import { Category } from '@model/Category'
 import { Product } from '@model/Product'
+import { Review } from '@model/Review'
 import { createProductSchema, productIdSchema, updateProductSchema } from '@schema/product'
 import { logError, logInfo } from '@utils/logger'
 import { productFilter } from '@utils/product'
 import { createErrorResponse, createResponse } from '@utils/response'
 import { Request, Response } from 'express'
+import { Types } from 'mongoose'
 
 export class ProductController {
   // Create a new product
@@ -55,6 +57,16 @@ export class ProductController {
     }
   }
 
+  async getAverageRating(productId: Types.ObjectId): Promise<number> {
+    const aggregationResult = await Review.aggregate([
+      { $match: { products: { $in: [productId] } } },
+      { $group: { _id: null, averageRating: { $avg: '$rating' } } },
+    ])
+
+    const result = aggregationResult[0]
+    return result ? result.averageRating : 0
+  }
+
   // Get all products
   async getAll(req: Request, res: Response) {
     const page = parseInt(req.query.page as string) || 1
@@ -62,9 +74,8 @@ export class ProductController {
     const skip = (page - 1) * limit
     try {
       const filter = productFilter(req)
-      const products = await Product.find(filter).skip(skip).limit(limit)
+      const products = await Product.find(filter).skip(skip).limit(limit).populate('reviews')
       const totalProducts = await Product.countDocuments(filter)
-
       const pagination = {
         currentPage: page,
         totalPages: Math.ceil(totalProducts / limit),

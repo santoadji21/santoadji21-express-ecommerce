@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from 'mongoose'
+import { Document, Schema, Types, model } from 'mongoose'
 
 interface Product extends Document {
   name: string
@@ -10,7 +10,12 @@ interface Product extends Document {
   colors: string[]
   user: Types.ObjectId
   images: string[]
-  reviews: Types.ObjectId[]
+  reviews: {
+    _id: Types.ObjectId
+    rating: number
+    message: string
+    user: Types.ObjectId
+  }[]
   totalQuantity: number
   soldQuantity: number
 }
@@ -78,5 +83,17 @@ const ProductSchema = new Schema<Product>(
     toJSON: { virtuals: true },
   },
 )
+
+ProductSchema.virtual('totalReviews').get(function (this: Product) {
+  return this.reviews.length
+})
+
+ProductSchema.virtual('averageRating').get(function (this: Product) {
+  if (this.reviews.length === 0) {
+    return 0
+  }
+  const totalRating = this.reviews.reduce((accumulator, review) => accumulator + review.rating, 0)
+  return totalRating / this.reviews.length
+})
 
 export const Product = model<Product>('Product', ProductSchema)
