@@ -1,13 +1,11 @@
 import { Brand } from '@model/Brand'
 import { Category } from '@model/Category'
 import { Product } from '@model/Product'
-import { Review } from '@model/Review'
 import { createProductSchema, productIdSchema, updateProductSchema } from '@schema/product'
 import { logError, logInfo } from '@utils/logger'
 import { productFilter } from '@utils/product'
 import { createErrorResponse, createResponse } from '@utils/response'
 import { Request, Response } from 'express'
-import { Types } from 'mongoose'
 
 export class ProductController {
   // Create a new product
@@ -55,16 +53,6 @@ export class ProductController {
       logError('Server error', req, error)
       return res.status(500).json(createErrorResponse('Server error', (error as Error).message))
     }
-  }
-
-  async getAverageRating(productId: Types.ObjectId): Promise<number> {
-    const aggregationResult = await Review.aggregate([
-      { $match: { products: { $in: [productId] } } },
-      { $group: { _id: null, averageRating: { $avg: '$rating' } } },
-    ])
-
-    const result = aggregationResult[0]
-    return result ? result.averageRating : 0
   }
 
   // Get all products
