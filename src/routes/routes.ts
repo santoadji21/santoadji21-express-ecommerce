@@ -6,6 +6,7 @@ import categoryRoutes from '@routes/category.routes'
 import brandRoutes from '@routes/brand.routes'
 import colorRoutes from '@routes/color.routes'
 import reviewRoutes from '@routes/review.routes'
+import orderRoutes from '@routes/order.routes'
 import express from 'express'
 
 const router = express.Router()
@@ -18,5 +19,6 @@ router.use('/v1', categoryRoutes)
 router.use('/v1', brandRoutes)
 router.use('/v1', colorRoutes)
 router.use('/v1', reviewRoutes)
+router.use('/v1', orderRoutes)
 
 export default router
